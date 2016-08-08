@@ -223,3 +223,18 @@ Open Questions
 
 4.  If the gateway process unexpectedly terminates, there could be orphan module
     host processes lying around. Should we handle this case?
+
+5.  What would be a good timeout for the proxy when it is sitting around waiting
+    for the module host to get its act together? If there is a timeout or a
+    connection failure, should the proxy retry the connection? If yes, how many
+    times? Should it implement exponential back-off?
+
+6.  As of today, the module build scripts link statically with the gateway code.
+    This means that `Broker_Publish` is linked in to the module binary. We may
+    need to build the broker functionality as a DLL/SO and have different
+    implementations loaded at runtime depending on whether a module is being
+    hosted in-proc in a gateway process or inside a module host process. Is this
+    doable?
+
+7.  The message serialization format is expected to be cross-platform. Is this
+    actually the case? Has this been tested?
