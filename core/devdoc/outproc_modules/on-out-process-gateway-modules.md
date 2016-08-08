@@ -213,3 +213,9 @@ Open Questions
 2.  As proposed here, a single module host process will only host a single
     module. Do we want a “medium” isolation option where multiple modules can be
     hosted in a single process?
+
+3.  If the module host process unexpectedly terminates, the proxy does not
+    currently attempt to restart it. Should we include this ability in the design?
+
+4.  If the gateway process unexpectedly terminates, there could be orphan module
+    host processes lying around. Should we handle this case?
