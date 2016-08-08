@@ -171,8 +171,10 @@ message packet is structured like so:
 -   **Create Module Request**
 
     This message is sent by the proxy to the module host after it establishes a
-    socket connection. The *data* in the packet is the configuration struct
-    specific to the module serialized as a byte stream.
+    socket connection. The *data* in the packet is the configuration JSON string
+    serialized as a length prefixed UTF-8 encoded string. The module host is
+    expected to de-serialize the string and invoke `Module_Create` passing the
+    parsed JSON representation.
 
 -   **Create Module Reply**
 
@@ -185,7 +187,8 @@ message packet is structured like so:
     This message is sent by the proxy to the module host whenever a message is
     received from the message broker. The `MESSAGE_HANDLE` is serialized as a
     byte stream and sent as the *data* of the packet. No reply is expected from
-    the module host for this message.
+    the module host for this message. The module host is expected to invoke
+    `Module_Receive` on the module.
 
 -   **Message Publish Request**
 
@@ -215,7 +218,8 @@ Open Questions
     hosted in a single process?
 
 3.  If the module host process unexpectedly terminates, the proxy does not
-    currently attempt to restart it. Should we include this ability in the design?
+    currently attempt to restart it. Should we include this ability in the
+    design?
 
 4.  If the gateway process unexpectedly terminates, there could be orphan module
     host processes lying around. Should we handle this case?
