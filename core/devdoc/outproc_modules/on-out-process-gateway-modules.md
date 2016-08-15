@@ -238,3 +238,62 @@ Open Questions
 
 7.  The message serialization format is expected to be cross-platform. Is this
     actually the case? Has this been tested?
+
+8.  Should the module host and the proxy module establish a protocol for
+    exchanging periodic heartbeat messages to gauge the health of each process?
+
+9.  In case the module host is running on a separate device how will the
+    communication between them be secured? Does *nanomsg* support TLS
+    encryption?
+
+Alternate Approach - Reusing Broker’s Nanomsg Socket
+----------------------------------------------------
+
+The topic based routing implementation of the message broker today uses a
+*nanomsg* socket for supporting publish/subscribe communication semantics. Given
+that there is already a *nanomsg* socket, the idea is to explore whether we can
+simply tack-on a TCP (or IPC) transport endpoint to it and communicate directly
+with it from the module host. While this approach works it does not appear to
+obviate the need for:
+
+1.  Having a *proxy* module that represents the module being hosted in the
+    external process because we’d still need a way of *activating* the remote
+    module which, with a proxy module, we could implement from the
+    `Module_Create` API.
+
+2.  Establishing a separate *control* channel between the proxy module and the
+    module host process since the proxy will still need to communicate the
+    following information to the module host:
+
+    1.  The *nanomsg* endpoint URL at which the broker is listening for messages
+
+    2.  The topic name to use for publishing messages to the broker
+
+    3.  The topic names that the remote module should subscribe to
+
+    If the activation type chosen is *fork*, then we might conceivably pass this
+    information via the command line. If other activation types were chosen
+    however then we would need to have a control channel to pass this
+    configuration data. Also, even when the activation type is *fork*, when the
+    Gateway SDK gains the ability to dynamically add new modules, new
+    subscriptions that may now be in effect will need to be passed to the remote
+    module which, again, requires that there be a control channel which can be
+    used for this purpose.
+
+This approach also requires that the broker use topic names for each module read
+from configuration instead of using pointer values as it currently does. This is
+needed so that the module host knows what topic to publish to when the module
+calls `Broker_Publish`.
+
+With this approach we discover that the module host ends up having to
+re-implement a non-trivial portion of the broker in it’s *proxy broker*
+implementation. It will for instance, need to re-implement the message loop that
+reads from the *nanomsg* subscribe socket, strip out the topic name from the
+message and deserialize and deliver the message to the module. Similarly, when
+the module calls `Broker_Publish` the proxy broker will need to serialize the
+message into a byte array and prefix it with the correct topic name. All of this
+is functionality that the broker in the gateway already implements.
+
+The take away appears to be that while this can be made to work, having a
+separate proxy module and control channel seems to lend itself to a cleaner,
+more natural implementation.
