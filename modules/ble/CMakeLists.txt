@@ -155,7 +155,9 @@ linkSharedUtil(ble_c2d_static)
 
 add_module_to_solution(ble)
 
-add_subdirectory(tests)
+if(${build_tests})
+    add_subdirectory(tests)
+endif()
 
 if(install_modules)
     install(TARGETS ble LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 

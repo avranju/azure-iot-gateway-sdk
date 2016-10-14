@@ -69,4 +69,6 @@ if(install_executables)
     install(TARGETS azure_functions_hl LIBRARY DESTINATION lib) 
 endif()
 
-add_subdirectory(tests)
+if(${build_tests})
+	add_subdirectory(tests)
+endif()

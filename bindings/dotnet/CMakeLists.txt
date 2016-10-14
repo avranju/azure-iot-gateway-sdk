@@ -63,7 +63,9 @@ linkSharedUtil(dotnet_static)
 linkSharedUtil(dotnet_hl)
 linkSharedUtil(dotnet_hl_static)
 
-add_subdirectory(tests)
+if(${build_tests})
+	add_subdirectory(tests)
+endif()
 
 add_module_to_solution(dotnet)
 

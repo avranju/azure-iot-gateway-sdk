@@ -69,4 +69,6 @@ if(install_modules)
     install(TARGETS identity_map_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 
-add_subdirectory(tests)
+if(${build_tests})
+	add_subdirectory(tests)
+endif()

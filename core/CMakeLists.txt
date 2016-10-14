@@ -133,7 +133,9 @@ else()
 endif()
 
 #this adds the tests to the build process
-add_subdirectory(tests)
+if(${build_tests})
+    add_subdirectory(tests)
+endif()
 
 #############################################################
 ########################INSTALL STUFF########################

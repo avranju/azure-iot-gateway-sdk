@@ -64,8 +64,9 @@ linkSharedUtil(logger_hl_static)
 
 add_module_to_solution(logger)
 
-add_subdirectory(tests)
-
+if(${build_tests})
+	add_subdirectory(tests)
+endif()
 
 
 if(install_modules)

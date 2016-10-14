@@ -96,7 +96,9 @@ linkSharedUtil(iothub_static)
 
 add_module_to_solution(iothub)
 
-add_subdirectory(tests)
+if(${build_tests})
+	add_subdirectory(tests)
+endif()
 
 if(install_modules)
 	install(TARGETS iothub LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 

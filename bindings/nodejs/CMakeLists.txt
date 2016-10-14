@@ -151,7 +151,9 @@ target_include_directories(nodejs_binding_hl_static PUBLIC $ENV{NODE_INCLUDE})
 
 add_module_to_solution(nodejs_binding)
 
-add_subdirectory(tests)
+if(${build_tests})
+    add_subdirectory(tests)
+endif()
 
 if(install_modules)
     install(TARGETS nodejs_binding LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")

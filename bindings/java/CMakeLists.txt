@@ -125,7 +125,9 @@ linkSharedUtil(java_module_host_hl_static)
 
 add_module_to_solution(java_module_host)
 
-add_subdirectory(tests)
+if(${build_tests})
+    add_subdirectory(tests)
+endif()
 
 if(install_modules)
     install(TARGETS java_module_host LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")

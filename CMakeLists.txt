@@ -22,6 +22,7 @@ endif()
 message(STATUS "CMake Install Prefix is ${CMAKE_INSTALL_PREFIX}")
 
 #the following variables are project-wide and can be used with cmake-gui
+option(build_tests "set build_tests to ON to include the test directories in the build (default is ON)" ON)
 option(skip_unittests "set skip_unittests to ON to skip unittests (default is OFF)[if possible, they are always built]" OFF)
 option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) [if possible, they are always built]" OFF)
 option(install_executables "should cmake run cmake's install function (that includes dynamic link libraries) [it does for yocto]" OFF)
@@ -143,17 +144,20 @@ endmacro(compileAsC11)
 enable_testing()
 compileAsC99()
 
+#this adds all dependencies
+include(dependencies.cmake)
+
 #this adds the C shared utility
-add_subdirectory(./deps/c-utility)
+#add_subdirectory(./deps/c-utility)
 
 #this adds the C IoTHubClient
-add_subdirectory(./deps/iot-sdk/c)
+#add_subdirectory(./deps/iot-sdk/c)
 
 #this makes available from now on the includes of azure-c-shared-utility
 include_directories(${SHARED_UTIL_INC_FOLDER})
 
 function(linkSharedUtil whatIsBuilding)
-  target_link_libraries(${whatIsBuilding} aziotsharedutil)
+  target_link_libraries(${whatIsBuilding} ${SHARED_UTIL_LIB})
 endfunction(linkSharedUtil)
 
 #this adds parson
