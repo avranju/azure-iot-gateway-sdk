@@ -1,7 +1,7 @@
 if(WIN32)
     file(
         INSTALL
-            "${CMAKE_CURRENT_LIST_DIR}/../bin/nanomsg.dll"
+            "${CMAKE_CURRENT_LIST_DIR}/../../nanomsg/bin/nanomsg.dll"
         DESTINATION
             "${CMAKE_CURRENT_BINARY_DIR}"
     )

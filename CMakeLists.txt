@@ -7,6 +7,8 @@ project(azure_iot_gateway_sdk)
 set(GATEWAY_VERSION 0.0.2 CACHE INTERNAL "")
 set(COMPANY_NAME "Microsoft")
 
+include(GNUInstallDirs)
+
 if(WIN32)
     set(VERSION_PREFIX "${GATEWAY_VERSION}" CACHE PATH "Version Prefix")
 else()
@@ -154,35 +156,36 @@ include(dependencies.cmake)
 #add_subdirectory(./deps/iot-sdk/c)
 
 #this makes available from now on the includes of azure-c-shared-utility
-include_directories(${SHARED_UTIL_INC_FOLDER})
+#include_directories(${AZURE_C_SHARED_UTILITY_INCLUDE_DIRS})
 
 function(linkSharedUtil whatIsBuilding)
-  target_link_libraries(${whatIsBuilding} ${SHARED_UTIL_LIB})
+  target_link_libraries(${whatIsBuilding} aziotsharedutil)
+  #target_include_directories(${whatIsBuilding} PUBLIC aziotsharedutil)
 endfunction(linkSharedUtil)
 
 #this adds parson
 include_directories(./deps/parson)
 
 #this adds nanomsg
-option(NN_ENABLE_DOC "" OFF )
-if (WIN32 AND GW_BROKER_TYPE STREQUAL "PubSub")
-  option(NN_STATIC_LIB "" OFF )
-else()
-  option(NN_STATIC_LIB "" ON )
-  # This should be set with the NN_STATIC_LIB options
-  add_definitions (-DNN_STATIC_LIB)
-endif()
-
-option(NN_TESTS "" OFF )
-option(NN_ENABLE_NANOCAT "" OFF)
-set(nanomsg_target_dll ${CMAKE_CURRENT_BINARY_DIR}/deps/nanomsg/$(Configuration)/nanomsg.dll CACHE INTERNAL "The location of the nanomsg.dll (windows)" FORCE)
-add_subdirectory(./deps/nanomsg)
-include_directories(./deps/nanomsg/src)
-
-set(NANOMSG_TARGETS dist )
-foreach(nanomsgTarget IN LISTS NANOMSG_TARGETS)
-  set_target_properties(${nanomsgTarget} PROPERTIES FOLDER "Nanomsg_Projects")
-endforeach(nanomsgTarget)
+#option(NN_ENABLE_DOC "" OFF )
+#if (WIN32 AND GW_BROKER_TYPE STREQUAL "PubSub")
+#  option(NN_STATIC_LIB "" OFF )
+#else()
+#  option(NN_STATIC_LIB "" ON )
+#  # This should be set with the NN_STATIC_LIB options
+#  add_definitions (-DNN_STATIC_LIB)
+#endif()
+#
+#option(NN_TESTS "" OFF )
+#option(NN_ENABLE_NANOCAT "" OFF)
+#set(nanomsg_target_dll ${CMAKE_CURRENT_BINARY_DIR}/deps/nanomsg/$(Configuration)/nanomsg.dll CACHE INTERNAL "The location of the nanomsg.dll (windows)" FORCE)
+#add_subdirectory(./deps/nanomsg)
+#include_directories(./deps/nanomsg/src)
+#
+#set(NANOMSG_TARGETS dist )
+#foreach(nanomsgTarget IN LISTS NANOMSG_TARGETS)
+#  set_target_properties(${nanomsgTarget} PROPERTIES FOLDER "Nanomsg_Projects")
+#endforeach(nanomsgTarget)
 
 function(link_broker whatIsBuilding)
   if (GW_BROKER_TYPE STREQUAL "PubSub")
