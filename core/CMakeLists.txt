@@ -2,6 +2,7 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 2.8.11)
+cmake_policy(SET CMP0022 NEW)
 
 add_subdirectory(deps)
 
@@ -91,10 +92,14 @@ add_library(gateway
 )
 
 if(WIN32)    
-    target_link_libraries(gateway aziotsharedutil nanomsg parson ${dynamic_loader_library})
+    target_link_libraries(gateway parson ${dynamic_loader_library})
+    target_link_libraries(gateway PUBLIC aziotsharedutil)
+    target_link_libraries(gateway PUBLIC nanomsg)
 else()
-    target_link_libraries(gateway aziotsharedutil nanomsg parson ${dynamic_loader_library})
-    
+    target_link_libraries(gateway parson ${dynamic_loader_library})
+    target_link_libraries(gateway PUBLIC aziotsharedutil)
+    target_link_libraries(gateway PUBLIC nanomsg)
+
     nn_check_lib (anl getaddrinfo_a NN_HAVE_GETADDRINFO_A)
     nn_check_lib (rt clock_gettime  NN_HAVE_CLOCK_GETTIME)
     nn_check_lib (rt sem_wait NN_HAVE_SEMAPHORE_RT)
@@ -144,9 +149,9 @@ endif()
 
 # Set the include dirs for the gatewayTargets includes destination
 if(WIN32)
-    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX} ${AIG_HEADER_INSTALL_PREFIX}/azureiot)
+    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX} ${SHARED_UTIL_INC_FOLDER})
 else()
-    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX} ${AIG_HEADER_INSTALL_PREFIX}/../azureiot)
+    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX})
 endif()
 
 install(TARGETS gateway EXPORT gatewayTargets
@@ -175,6 +180,7 @@ install(EXPORT gatewayTargets
         "${PROJECT_NAME}Targets.cmake"
     DESTINATION
         ${package_location}
+    EXPORT_LINK_INTERFACE_LIBRARIES
 )
 install(
     FILES

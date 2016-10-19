@@ -1,8 +1,8 @@
 #c-utility
 find_package(azure_c_shared_utility CONFIG)
 if(${azure_c_shared_utility_FOUND})
-    message("Shared util include dir ${AZURE_C_SHARED_UTILITY_INCLUDE_DIRS}")
-    set(SHARED_UTIL_INC_FOLDER ${AZURE_C_SHARED_UTILITY_INCLUDE_DIRS} CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
+    set(SHARED_UTIL_INC_FOLDER ${AZURE_C_SHARED_UTILITY_INCLUDE_DIR} CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
+    set(SHARED_UTIL_LIB_FOLDER ${AZURE_C_SHARED_LIBRARY_DIR} CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
     set(SHARED_UTIL_LIB aziotsharedutil CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
 else()
     #Will change to ExternalProject_Add

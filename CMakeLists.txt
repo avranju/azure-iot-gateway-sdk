@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 2.8.11)
 project(azure_iot_gateway_sdk)
-
+cmake_policy(SET CMP0022 NEW)
 set(GATEWAY_VERSION 0.0.2 CACHE INTERNAL "")
 set(COMPANY_NAME "Microsoft")
 
