@@ -386,8 +386,8 @@ static bool copy_properties_from_message(
                         auto prop_name_str = prop_name->ToString();
 
                         // we are only interested in string property values
-                        auto prop_value = props->Get(context, prop_name).ToLocalChecked();
-                        if (prop_value.IsEmpty() == false && prop_value->IsString() == true)
+                        v8::Local<v8::Value> prop_value;
+                        if (props->Get(context, prop_name).ToLocal(&prop_value) && prop_value->IsString() == true)
                         {
                             auto prop_value_str = prop_value->ToString();
 
@@ -761,8 +761,8 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                             else
                             {
                                 // we expect result to be a boolean
-                                auto result = maybe_result.ToLocalChecked();
-                                if (result.IsEmpty() == true || result->IsBoolean() == false)
+                                v8::Local<v8::Value> result;
+                                if (maybe_result.ToLocal(&result) == false || result->IsBoolean() == false)
                                 {
                                     LogInfo("Warning: The gateway object's create method did not return a boolean");
                                     info.GetReturnValue().Set(false);
@@ -1244,8 +1244,9 @@ static void on_start_callback(
                 {
                     // we already verified that this exists and is a function when the module
                     // was registered
-                    auto start_method_value = gateway->Get(context, start_method_name).ToLocalChecked();
-                    if (start_method_value.IsEmpty() != true && start_method_value->IsFunction() == true)
+                    v8::Local<v8::Value> start_method_value;
+                    if (gateway->Get(context, start_method_name).ToLocal(&start_method_value) &&
+                        start_method_value->IsFunction() == true)
                     {
                         auto start_method = start_method_value.As<v8::Function>();
 
