@@ -4,6 +4,8 @@
 #ifndef GATEWAY_PACKAGE_MANAGER_H
 #define GATEWAY_PACKAGE_MANAGER_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -19,18 +21,6 @@ extern "C"
 DEFINE_ENUM(PACKAGE_MANAGER_RESULT, PACKAGE_MANAGER_RESULT_VALUES);
 
 /**
- * @brief The list of supported package manager implementations.
- */
-#define PACKAGE_MANAGER_TYPE_VALUES \
-    UNKNOWN,    \
-    NUGET,      \
-    APTITUDE,   \
-    NPM,        \
-    MAVEN
-
-DEFINE_ENUM(PACKAGE_MANAGER_TYPE, PACKAGE_MANAGER_TYPE_VALUES);
-
-/**
  * @brief Captures information required to define a "package". The expectation
  *        is that all information required to uniquely define a package will be
  *        encoded in these fields.
@@ -40,6 +30,10 @@ typedef struct PACKAGE_INFO_TAG
     const char* name;
     const char* version;
 }PACKAGE_INFO;
+
+typedef PACKAGE_MANAGER_RESULT(*pfPackageManager_Initialize)(void);
+
+typedef void(*pfPackageManager_DeInitialize)(void);
 
 typedef void*(*pfPackageManager_ParseConfigurationFromJson)(const char* json);
 
@@ -55,12 +49,29 @@ typedef void(*PACKAGE_MANAGER_INSTALL_CALLBACK)(
 typedef PACKAGE_MANAGER_RESULT(*pfPackageManager_Configure)(void* configuration);
 
 typedef PACKAGE_MANAGER_RESULT(*pfPackageManager_InstallPackages)(
-    const VECTOR_HANDLE package_info_list,
+    const PACKAGE_INFO* package_info_list,
+    size_t count_of_package_info_list,
     PACKAGE_MANAGER_INSTALL_CALLBACK callback
 );
 
+/**
+ * @brief This struct defines the list of APIs that a package manager
+ *        implementation must provide.
+ */
 typedef struct PACKAGE_MANAGER_API_TAG
 {
+    /**
+     * @brief Initializes the package manager and returns a status. This API is
+     *        called when the package manager instance is added to the gateway.
+     */
+    pfPackageManager_Initialize Initialize;
+
+    /**
+     * @brief Tears down the package manager. This API called when the gateway
+     *        is being shutdown.
+     */
+    pfPackageManager_DeInitialize DeInitialize;
+
     /**
      * @brief Given a JSON string containing package manager specific
      *        configuration information (a custom nuget feed URL for example)
@@ -101,31 +112,39 @@ typedef struct PACKAGE_MANAGER_API_TAG
  */
 typedef struct PACKAGE_MANAGER_TAG
 {
-    PACKAGE_MANAGER_TYPE    type;
+    const char*             name;
     void*                   configuration;
     PACKAGE_MANAGER_API*    api;
 }PACKAGE_MANAGER;
 
 /**
- * @brief This function creates the default set of supported package managers.
+ * @brief This function initializes the package manager.
  */
 PACKAGE_MANAGER_RESULT PackageManager_Initialize(void);
 
 /**
- * @brief This function frees resources allocated during initialization.
+ * @brief This function adds a new package manager to the gateway. Calls
+ *        @c package_manager->api->Initialize.
+ */
+PACKAGE_MANAGER_RESULT PackageManager_Add(const PACKAGE_MANAGER* package_manager);
+
+/**
+ * @brief This function adds the default built-in package managers to the
+ *        gateway.
+ */
+PACKAGE_MANAGER_RESULT PackageManager_AddDefaultPackageManagers(void);
+
+/**
+ * @brief This function frees resources allocated during initialization. Also
+ *        calls @c PACKAGE_MANAGER::api->DeInitialize for every package manager
+ *        in its collection.
  */
 void PackageManager_DeInitialize(void);
 
 /**
- * @brief Given a string representation of a package manager type, returns the
- *        corresponding enum value.
+ * @brief Given a package manager name, retrieves a pointer to it.
  */
-PACKAGE_MANAGER_TYPE PackageManager_ParseType(const char* type);
-
-/**
- * @brief Given a package manager type, retrieves a handle to it.
- */
-PACKAGE_MANAGER* PackageManager_GetPackageManagerByType(PACKAGE_MANAGER_TYPE type);
+PACKAGE_MANAGER* PackageManager_GetPackageManagerByName(const char* name);
 
 #ifdef __cplusplus
 }
