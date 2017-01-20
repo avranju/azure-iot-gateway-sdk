@@ -52,6 +52,8 @@ typedef void(*PACKAGE_MANAGER_INSTALL_CALLBACK)(
     PACKAGE_MANAGER_RESULT result
 );
 
+typedef PACKAGE_MANAGER_RESULT(*pfPackageManager_Configure)(void* configuration);
+
 typedef PACKAGE_MANAGER_RESULT(*pfPackageManager_InstallPackages)(
     const VECTOR_HANDLE package_info_list,
     PACKAGE_MANAGER_INSTALL_CALLBACK callback
@@ -78,6 +80,12 @@ typedef struct PACKAGE_MANAGER_API_TAG
      *        currently installed on the gateway.
      */
     pfPackageManager_IsPackageInstalled IsPackageInstalled;
+
+    /**
+     * @brief Updates the package managers configuration with the given
+     *        configuration information.
+     */
+    pfPackageManager_Configure Configure;
 
     /**
      * @brief Asynchronously installs a set of packages and invokes the
