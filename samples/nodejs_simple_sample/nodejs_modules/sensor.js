@@ -3,19 +3,23 @@
 module.exports = {
     broker: null,
     configuration: null,
+    intervalID: -1,
 
     create: function (broker, configuration) {
         this.broker = broker;
-        this.configuration = configuration;
+        this.configuration = Object.assign({}, {
+            macAddress: '00:00:00:00:00:00'
+        }, configuration);
 
         return true;
     },
 
     start: function () {
-        setInterval(() => {
+        this.intervalID = setInterval(() => {
             this.broker.publish({
                 properties: {
-                    'source': 'sensor'
+                    'source': 'sensor',
+                    'macAddress': this.configuration.macAddress
                 },
                 content: new Uint8Array([
                     Math.random() * 50,
@@ -30,5 +34,8 @@ module.exports = {
 
     destroy: function() {
         console.log('sensor.destroy');
+        if(this.intervalID !== -1) {
+            clearInterval(this.intervalID);
+        }
     }
 };

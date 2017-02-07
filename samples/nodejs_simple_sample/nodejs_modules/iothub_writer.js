@@ -1,6 +1,7 @@
 'use strict';
 
 let Protocol = require('azure-iot-device-amqp').Amqp;
+// let Protocol = require('azure-iot-device-mqtt').Mqtt;
 let Client = require('azure-iot-device').Client;
 let Message = require('azure-iot-device').Message;
 
@@ -49,6 +50,7 @@ class IotHubWriterModule
     }
 
     receive(message) {
+        console.log(`iothub_writer - not really writing anything`);
         if(this.connected) {
             var m = new Message(message.content ? message.content.buffer : []);
             if(message.properties) {
@@ -57,11 +59,11 @@ class IotHubWriterModule
                 }
             }
 
-            this.iothub_client.sendEvent(m, err => {
-                if(err) {
-                    console.error(`An error occurred when sending message to Azure IoT Hub: ${err.toString()}`);
-                }
-            });
+            // this.iothub_client.sendEvent(m, err => {
+            //     if(err) {
+            //         console.error(`An error occurred when sending message to Azure IoT Hub: ${err.toString()}`);
+            //     }
+            // });
         }
     }
 

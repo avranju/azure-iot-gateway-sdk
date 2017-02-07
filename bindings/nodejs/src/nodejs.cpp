@@ -648,6 +648,7 @@ static v8::Local<v8::Object> create_message_broker(v8::Isolate* isolate, v8::Loc
         mbt->SetInternalFieldCount(1);
 
         // create a new instance of the template
+        LogInfo("%s:%d: Calling ToLocalChecked", __FILE__, __LINE__);
         result = mbt->NewInstance(context).ToLocalChecked();
         broker_template.Reset();
     }
@@ -761,10 +762,12 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                             v8::Local<v8::Value> config_json;
                             if (handle_data.configuration_json.empty() == false)
                             {
+                                LogInfo("%s:%d: Calling ToLocalChecked", __FILE__, __LINE__);
                                 config_json = v8::JSON::Parse(isolate, json_str).ToLocalChecked();
                             }
 
                             // we already verified that this exists and is a function
+                            LogInfo("%s:%d: Calling ToLocalChecked", __FILE__, __LINE__);
                             auto create_method_value = gateway->Get(context, create_method_name).ToLocalChecked();
                             auto create_method = create_method_value.As<v8::Function>();
 

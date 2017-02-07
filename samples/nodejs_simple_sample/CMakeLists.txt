@@ -4,10 +4,10 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 if(WIN32)
-  set(nodejs_simple_sample_json 
+  set(nodejs_simple_sample_json
       ./src/gateway_sample_win.json )
 else()
-  set(nodejs_simple_sample_json 
+  set(nodejs_simple_sample_json
       ./src/gateway_sample_lin.json )
 endif()
 
@@ -25,7 +25,8 @@ include_directories(
   ${GW_INC}
 )
 
-set(LIBS ${LIBS} gateway)
+set(LIBS ${LIBS} gateway nodejs_binding)
+set(CMAKE_EXE_LINKER_FLAGS  "-Wl,--no-as-needed ${CMAKE_EXE_LINKER_FLAGS}")
 
 add_executable(nodejs_simple_sample ${nodejs_simple_sample_headers} ${nodejs_simple_sample_sources})
 target_link_libraries(nodejs_simple_sample ${LIBS})

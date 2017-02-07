@@ -115,7 +115,7 @@ function(copy_node_dll whatIsBuilding whatIsBuildingLocation)
 endfunction(copy_node_dll)
 
 # build nodejs_binding module as a dynamic library
-add_library(nodejs_binding MODULE ${nodejs_sources} ${nodejs_headers})
+add_library(nodejs_binding SHARED ${nodejs_sources} ${nodejs_headers})
 target_link_libraries(nodejs_binding ${LIBS})
 linkSharedUtil(nodejs_binding)
 add_pic_flag(nodejs_binding)

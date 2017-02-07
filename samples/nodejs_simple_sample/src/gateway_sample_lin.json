@@ -4,17 +4,47 @@
             "type": "node",
             "name": "node",
             "configuration": {
-                "binding.path": "../../bindings/nodejs/libnodejs_binding.so"
+                "binding.path": "/home/pi/code/azure-iot-gateway-sdk/build/bindings/nodejs/libnodejs_binding.so"
             }
         }
     ],
     "modules": [
         {
+            "name": "IotHub",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "/home/pi/code/azure-iot-gateway-sdk/build/modules/iothub/libiothub.so"
+                }
+            },
+            "args": {
+                "IoTHubName": "YOUR_HUB_NAME",
+                "IoTHubSuffix": "azure-devices.net",
+                "Transport": "AMQP"
+            }
+        },
+        {
+            "name": "mapping",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "/home/pi/code/azure-iot-gateway-sdk/build/modules/identitymap/libidentity_map.so"
+                }
+            },
+            "args": [
+                {
+                    "macAddress": "AA:BB:CC:DD:EE:FF",
+                    "deviceId": "YOUR_DEVICE_ID",
+                    "deviceKey": "YOUR_DEVICE_KEY"
+                }
+            ]
+        },
+        {
             "name": "node_printer",
             "loader": {
                 "name": "node",
                 "entrypoint": {
-                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/printer.js"
+                    "main.path": "/home/pi/code/azure-iot-gateway-sdk/samples/nodejs_simple_sample/nodejs_modules/printer.js"
                 }
             },
             "args": null
@@ -24,21 +54,11 @@
             "loader": {
                 "name": "node",
                 "entrypoint": {
-                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/sensor.js"
-                }
-            },
-            "args": null
-        },
-        {
-            "name": "iothub_writer",
-            "loader": {
-                "name": "node",
-                "entrypoint": {
-                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/iothub_writer.js"
+                    "main.path": "/home/pi/code/azure-iot-gateway-sdk/samples/nodejs_simple_sample/nodejs_modules/sensor.js"
                 }
             },
             "args": {
-                "connection_string": "<IoT Hub device connection string>"
+                "macAddress": "AA:BB:CC:DD:EE:FF"
             }
         },
         {
@@ -46,7 +66,7 @@
             "loader": {
                 "name": "native",
                 "entrypoint": {
-                    "module.path": "../../modules/logger/liblogger.so"
+                    "module.path": "/home/pi/code/azure-iot-gateway-sdk/build/modules/logger/liblogger.so"
                 }
             },
             "args": {
@@ -61,11 +81,15 @@
         },
         {
             "source": "node_sensor",
-            "sink": "iothub_writer"
+            "sink": "node_printer"
+        },
+        {
+            "source": "mapping",
+            "sink": "IotHub"
         },
         {
             "source": "node_sensor",
-            "sink": "node_printer"
+            "sink": "mapping"
         }
     ]
 }
