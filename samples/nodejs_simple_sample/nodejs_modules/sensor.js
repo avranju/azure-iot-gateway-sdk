@@ -8,7 +8,8 @@ module.exports = {
     create: function (broker, configuration) {
         this.broker = broker;
         this.configuration = Object.assign({}, {
-            macAddress: '00:00:00:00:00:00'
+            deviceName: '',
+            deviceKey: ''
         }, configuration);
 
         return true;
@@ -16,15 +17,20 @@ module.exports = {
 
     start: function () {
         this.intervalID = setInterval(() => {
+            let data = [
+                Math.random() * 50,
+                Math.random() * 50
+            ];
+            let buffer = Buffer.from(JSON.stringify(data), 'utf8');
+            let content = new Uint8Array(buffer);
+
             this.broker.publish({
                 properties: {
-                    'source': 'sensor',
-                    'macAddress': this.configuration.macAddress
+                    'source': 'mapping',
+                    'deviceName': this.configuration.deviceName,
+                    'deviceKey': this.configuration.deviceKey
                 },
-                content: new Uint8Array([
-                    Math.random() * 50,
-                    Math.random() * 50
-                ])
+                content: content
             });
         }, 500);
     },

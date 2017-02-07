@@ -18,26 +18,10 @@
                 }
             },
             "args": {
-                "IoTHubName": "YOUR_HUB_NAME",
+                "IoTHubName": "raj-devhub-01",
                 "IoTHubSuffix": "azure-devices.net",
                 "Transport": "AMQP"
             }
-        },
-        {
-            "name": "mapping",
-            "loader": {
-                "name": "native",
-                "entrypoint": {
-                    "module.path": "/home/pi/code/azure-iot-gateway-sdk/build/modules/identitymap/libidentity_map.so"
-                }
-            },
-            "args": [
-                {
-                    "macAddress": "AA:BB:CC:DD:EE:FF",
-                    "deviceId": "YOUR_DEVICE_ID",
-                    "deviceKey": "YOUR_DEVICE_KEY"
-                }
-            ]
         },
         {
             "name": "node_printer",
@@ -58,7 +42,8 @@
                 }
             },
             "args": {
-                "macAddress": "AA:BB:CC:DD:EE:FF"
+                "deviceName": "prickly_raj",
+                "deviceKey": "RtIO//qQxspGDbWtowLQrFKJuXcKHRGhxZxq57JFBkI="
             }
         },
         {
@@ -84,12 +69,8 @@
             "sink": "node_printer"
         },
         {
-            "source": "mapping",
-            "sink": "IotHub"
-        },
-        {
             "source": "node_sensor",
-            "sink": "mapping"
+            "sink": "IotHub"
         }
     ]
 }
