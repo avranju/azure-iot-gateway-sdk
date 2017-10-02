@@ -4,8 +4,12 @@
 #include <vector>
 #include <new>
 #include <memory>
+#include <sstream>
+#include <iostream>
 
 #include "uv.h"
+#include "module_loader.h"
+#include "module_loaders/node_loader.h"
 #include "nodejs_common.h"
 #include "nodejs_utils.h"
 #include "modules_manager.h"
@@ -29,10 +33,11 @@ using namespace nodejs_module;
 "  }, 100);"                             \
 "})();"                                  \
 
-ModulesManager::ModulesManager() :
+ModulesManager::ModulesManager(const char* node_options) :
     m_nodejs_thread(nullptr),
     m_moduleid_counter(0),
-    m_node_initialized(false)
+    m_node_initialized(false),
+    m_node_options(node_options)
 {}
 
 ModulesManager::~ModulesManager()
@@ -65,9 +70,19 @@ ModulesManager* ModulesManager::Get()
             {
                 try
                 {
-                    /*Codes_SRS_NODEJS_MODULES_MGR_13_003: [ This method shall create an instance of ModulesManager if this is the first call. ]*/
-                    /*Codes_SRS_NODEJS_MODULES_MGR_13_004: [ This method shall return a non-NULL pointer to a ModulesManager instance when the object has been successfully insantiated. ]*/
-                    instance = new ModulesManager();
+                    MODULE_LOADER* loader = ModuleLoader_FindByName(NODE_LOADER_NAME);
+                    if (loader == nullptr)
+                    {
+                        LogError("Could not find Node.js module loader.");
+                    }
+                    else
+                    {
+                        NODE_LOADER_CONFIGURATION* config = (NODE_LOADER_CONFIGURATION*)loader->configuration;
+
+                        /*Codes_SRS_NODEJS_MODULES_MGR_13_003: [ This method shall create an instance of ModulesManager if this is the first call. ]*/
+                        /*Codes_SRS_NODEJS_MODULES_MGR_13_004: [ This method shall return a non-NULL pointer to a ModulesManager instance when the object has been successfully insantiated. ]*/
+                        instance = new ModulesManager(STRING_c_str(config->options));
+                    }
                 }
                 catch (std::bad_alloc& err)
                 {
@@ -232,10 +247,30 @@ void ModulesManager::JoinNodeThread() const
     ThreadAPI_Join(thread, nullptr);
 }
 
+static std::vector<std::string> parse_opts(const std::string& str)
+{
+    // NOTE: This function splits "str" using a space as the delimiter
+    // and populates a vector. This will not work if the tokens have
+    // embedded space characters in them (they will show up as separate
+    // options).
+
+    using namespace std;
+
+    vector<string> argsv;
+    istringstream is{ str };
+    string inp;
+    while (getline(is, inp, ' ')) {
+        argsv.push_back(inp);
+    }
+
+    return argsv;
+}
+
 int ModulesManager::NodeJSRunner()
 {
+    using namespace std;
+
     // start up Node.js!
-    int argc = 3;
 
     // libuv on Linux expects the argv to be formatted in a particular
     // way - i.e. all the argv values should be contiguous in memory;
@@ -248,15 +283,41 @@ int ModulesManager::NodeJSRunner()
     // to do so and besides there might be "holes" in the buffer for
     // memory alignment reasons which causes the libuv validation to fail
     // (which appears to be a bug in libuv - see the 'assert' call in
-    // the function 'uv_setup_args' in 'proctitle.c')
+    // the function 'uv_setup_args' in 'proctitle.c')\
 
-    const char argv[] = "node" "\0" "-e" "\0" NODE_STARTUP_SCRIPT "\0";
-    const char *p1 = &argv[0];
-    const char *p2 = &argv[sizeof("node")];
-    const char *p3 = p2 + sizeof("-e");
-    const char *pargv[] = { p1, p2, p3 };
+    // build the args string
+    vector<string> argsv
+    {
+        "node",
+        "-e",
+        NODE_STARTUP_SCRIPT
+    };
+    vector<string> optsv = parse_opts(m_node_options);
+    argsv.insert(end(argsv), begin(optsv), end(optsv));
 
-    int result = node::Start(argc, const_cast<char**>(pargv));
+    // compute total length of all options
+    size_t len = 0;
+    for (auto s : argsv)
+    {
+        len += s.length() + 1;
+    }
+
+    vector<char> argv;
+    argv.resize(len + 1);
+
+    size_t i = 0;
+    char *p = &(argv[0]);
+    vector<char*> pargv;
+    pargv.resize(argsv.size());
+
+    for (; i < argsv.size(); ++i)
+    {
+        pargv[i] = p;
+        strcpy(p, argsv[i].c_str());
+        p += argsv[i].length() + 1;
+    }
+
+    int result = node::Start(argsv.size(), &(pargv[0]));
 
     // reset object state to indicate that the node thread has now
     // left the building

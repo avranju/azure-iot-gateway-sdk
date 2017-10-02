@@ -351,7 +351,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
         module_entry->module_name == NULL ||
         module_entry->module_loader_info.loader == NULL ||
         module_entry->module_loader_info.entrypoint == NULL ||
-		module_entry->module_loader_info.loader->api == NULL
+        module_entry->module_loader_info.loader->api == NULL
        )
     {
         module_result = NULL;
@@ -413,7 +413,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
                         module_configuration = MODULE_PARSE_CONFIGURATION_FROM_JSON(module_apis)(
                             (const char *)(module_entry->module_configuration)
                         );
-					}
+                    }
 
                     // request the loader to transform the module configuration to what the module expects
                     /*Codes_SRS_GATEWAY_17_018: [ The function shall construct module configuration from module's entrypoint and module's module_configuration. ]*/

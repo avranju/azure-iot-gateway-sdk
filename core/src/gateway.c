@@ -61,10 +61,10 @@ VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw)
                 else
                 {
                     /*
-                    * Two pass way of copying graph edges and nodes.
-                    * First we create the nodes and map old structs to new struct ptr.
-                    * Then in the second pass we create the edges using the map
-                    */
+                     * Two pass way of copying graph edges and nodes.
+                     * First we create the nodes and map old structs to new struct ptr.
+                     * Then in the second pass we create the edges using the map
+                     */
                     int has_failed = 0;
                     /*Codes_SRS_GATEWAY_26_007: [ This function shall return a snapshot copy of information about current gateway modules. ]*/
                     for (size_t i = 0; i < module_count; i++)

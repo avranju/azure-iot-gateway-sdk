@@ -277,11 +277,11 @@ static MODULE_LOADER_BASE_CONFIGURATION* NodeModuleLoader_ParseConfigurationFrom
 {
     (void)loader;
 
-    MODULE_LOADER_BASE_CONFIGURATION* result = (MODULE_LOADER_BASE_CONFIGURATION*)malloc(sizeof(MODULE_LOADER_BASE_CONFIGURATION));
+    NODE_LOADER_CONFIGURATION* result = (NODE_LOADER_CONFIGURATION*)malloc(sizeof(NODE_LOADER_CONFIGURATION));
     if (result != NULL)
     {
         //Codes_SRS_NODE_MODULE_LOADER_13_019: [ NodeModuleLoader_ParseConfigurationFromJson shall call ModuleLoader_ParseBaseConfigurationFromJson to parse the loader configuration and return the result. ]
-        if (ModuleLoader_ParseBaseConfigurationFromJson(result, json) != MODULE_LOADER_SUCCESS)
+        if (ModuleLoader_ParseBaseConfigurationFromJson(&(result->base), json) != MODULE_LOADER_SUCCESS)
         {
             LogError("ModuleLoader_ParseBaseConfigurationFromJson failed");
             free(result);
@@ -290,9 +290,24 @@ static MODULE_LOADER_BASE_CONFIGURATION* NodeModuleLoader_ParseConfigurationFrom
         }
         else
         {
-            /**
-             * Everything's good.
-             */
+            // save the node options if we have any
+            result->options = NULL;
+            JSON_Object* config = json_value_get_object(json);
+            if (config == NULL)
+            {
+                LogError("json_value_get_object failed");
+                free(result);
+                //Codes_SRS_NODE_MODULE_LOADER_13_018: [ NodeModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ]
+                result = NULL;
+            }
+            else
+            {
+                const char* options = json_object_get_string(config, "options");
+                if (options != NULL)
+                {
+                    result->options = STRING_construct(options);
+                }
+            }
         }
     }
     else
@@ -301,7 +316,7 @@ static MODULE_LOADER_BASE_CONFIGURATION* NodeModuleLoader_ParseConfigurationFrom
         LogError("malloc failed");
     }
 
-    return result;
+    return (MODULE_LOADER_BASE_CONFIGURATION*)result;
 }
 
 static void NodeModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODULE_LOADER_BASE_CONFIGURATION* configuration)
@@ -310,8 +325,15 @@ static void NodeModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODU
 
     if (configuration != NULL)
     {
+        NODE_LOADER_CONFIGURATION* config = (NODE_LOADER_CONFIGURATION*)configuration;
+
         //Codes_SRS_NODE_MODULE_LOADER_13_021: [ NodeModuleLoader_FreeConfiguration shall call ModuleLoader_FreeBaseConfiguration to free resources allocated by ModuleLoader_ParseBaseConfigurationFromJson. ]
-        ModuleLoader_FreeBaseConfiguration(configuration);
+        ModuleLoader_FreeBaseConfiguration(&(config->base));
+
+        if (config->options != NULL)
+        {
+            STRING_delete(config->options);
+        }
 
         //Codes_SRS_NODE_MODULE_LOADER_13_022: [ NodeModuleLoader_FreeConfiguration shall free resources allocated by NodeModuleLoader_ParseConfigurationFromJson. ]
         free(configuration);
@@ -329,62 +351,82 @@ static void* NodeModuleLoader_BuildModuleConfiguration(
     const void* module_configuration
 )
 {
-    (void)loader;
-
     NODEJS_MODULE_CONFIG* result;
-    if (entrypoint == NULL)
+    if (loader == NULL)
     {
-        LogError("entrypoint is NULL.");
-        //Codes_SRS_NODE_MODULE_LOADER_13_023: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint is NULL. ]
+        LogError("loader is NULL.");
         result = NULL;
     }
     else
     {
-        NODE_LOADER_ENTRYPOINT* node_entrypoint = (NODE_LOADER_ENTRYPOINT*)entrypoint;
-        if (node_entrypoint->mainPath == NULL)
+        if (entrypoint == NULL)
         {
-            LogError("entrypoint mainPath is NULL.");
-            //Codes_SRS_NODE_MODULE_LOADER_13_024: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint->mainPath is NULL. ]
+            LogError("entrypoint is NULL.");
+            //Codes_SRS_NODE_MODULE_LOADER_13_023: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint is NULL. ]
             result = NULL;
         }
         else
         {
-            result = (NODEJS_MODULE_CONFIG*)malloc(sizeof(NODEJS_MODULE_CONFIG));
-            if (result == NULL)
+            NODE_LOADER_ENTRYPOINT* node_entrypoint = (NODE_LOADER_ENTRYPOINT*)entrypoint;
+            if (node_entrypoint->mainPath == NULL)
             {
-                //Codes_SRS_NODE_MODULE_LOADER_13_025: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                LogError("malloc failed.");
+                LogError("entrypoint mainPath is NULL.");
+                //Codes_SRS_NODE_MODULE_LOADER_13_024: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint->mainPath is NULL. ]
+                result = NULL;
             }
             else
             {
-                result->main_path = STRING_clone(node_entrypoint->mainPath);
-                if (result->main_path == NULL)
+                result = (NODEJS_MODULE_CONFIG*)malloc(sizeof(NODEJS_MODULE_CONFIG));
+                if (result == NULL)
                 {
-                    LogError("STRING_clone for mainPath failed.");
-                    free(result);
                     //Codes_SRS_NODE_MODULE_LOADER_13_025: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                    result = NULL;
+                    LogError("malloc failed.");
                 }
                 else
                 {
-                    // module_configuration is a STRING_HANDLE - see NODEJS_ParseConfigurationFromJson in nodejs.cpp
-                    // PERF NOTE: We really need ref-counted strings to avoid redundant string clones.
-                    result->configuration_json = (module_configuration == NULL) ? NULL :
-                        STRING_clone((STRING_HANDLE)module_configuration);
-
-                    if (module_configuration != NULL && result->configuration_json == NULL)
+                    result->main_path = STRING_clone(node_entrypoint->mainPath);
+                    if (result->main_path == NULL)
                     {
-                        LogError("STRING_clone for module configuration failed.");
-                        STRING_delete(result->main_path);
+                        LogError("STRING_clone for mainPath failed.");
                         free(result);
                         //Codes_SRS_NODE_MODULE_LOADER_13_025: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
                         result = NULL;
                     }
                     else
                     {
-                        /**
-                         * Everything's good.
-                         */
+                        // module_configuration is a STRING_HANDLE - see NODEJS_ParseConfigurationFromJson in nodejs.cpp
+                        // PERF NOTE: We really need ref-counted strings to avoid redundant string clones.
+                        result->configuration_json = (module_configuration == NULL) ? NULL :
+                            STRING_clone((STRING_HANDLE)module_configuration);
+
+                        if (module_configuration != NULL && result->configuration_json == NULL)
+                        {
+                            LogError("STRING_clone for module configuration failed.");
+                            STRING_delete(result->main_path);
+                            free(result);
+                            //Codes_SRS_NODE_MODULE_LOADER_13_025: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
+                            result = NULL;
+                        }
+                        else
+                        {
+                            if (loader->configuration != NULL)
+                            {
+                                NODE_LOADER_CONFIGURATION* loader_config = (NODE_LOADER_CONFIGURATION*)loader->configuration;
+                                if (loader_config->options != NULL)
+                                {
+                                    result->node_options = STRING_clone(loader_config->options);
+                                    if (result->node_options == NULL)
+                                    {
+                                        LogError("STRING_clone for node options failed.");
+                                        STRING_delete(result->configuration_json);
+                                        STRING_delete(result->main_path);
+                                        free(result);
+                                        //Codes_SRS_NODE_MODULE_LOADER_13_025: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
+                                        result = NULL;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -410,6 +452,7 @@ static void NodeModuleLoader_FreeModuleConfiguration(const MODULE_LOADER* loader
         //Codes_SRS_NODE_MODULE_LOADER_13_028: [ NodeModuleLoader_FreeModuleConfiguration shall free the NODEJS_MODULE_CONFIG object. ]
         STRING_delete(config->main_path);
         STRING_delete(config->configuration_json);
+        STRING_delete(config->node_options);
         free(config);
     }
 }

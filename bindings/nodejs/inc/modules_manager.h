@@ -53,9 +53,15 @@ namespace nodejs_module
         bool m_node_initialized;
 
         /**
+         * Optional additional command line arguments to be passed to the node
+         * runtime when bootstrapping it.
+         */
+        std::string m_node_options;
+
+        /**
          * Private constructor to enforce singleton instance.
          */
-        ModulesManager();
+        ModulesManager(const char* node_options = nullptr);
 
     public:
         ~ModulesManager();

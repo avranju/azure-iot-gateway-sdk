@@ -27,7 +27,7 @@
       {
           "name": "java_sensor",
           "loader":{
-              "name": "java",
+            "name": "java",
             "entrypoint": {
               "class.name": "com/microsoft/azure/gateway/sample/Sensor",
               "class.path": "..\\..\\..\\samples\\java_sample\\java_modules\\Sensor\\target\\sample-sensor-module-1.1.0-with-deps.jar"

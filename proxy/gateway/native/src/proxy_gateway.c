@@ -70,8 +70,8 @@ typedef struct MESSAGE_THREAD_TAG {
 } MESSAGE_THREAD;
 
 typedef struct REMOTE_MODULE_TAG {
-	int control_endpoint;
-	int control_socket;
+    int control_endpoint;
+    int control_socket;
     int message_endpoint;
     int message_socket;
     MESSAGE_THREAD_HANDLE message_thread;
@@ -157,7 +157,7 @@ ProxyGateway_Attach (
             } else if (0 > (remote_module->control_endpoint = nn_bind(remote_module->control_socket, control_channel_uri))) {
                 /* Codes_SRS_PROXY_GATEWAY_027_014: [If the call to `nn_bind` returns a negative value, then `ProxyGateway_Attach` shall close the socket, free any previously allocated memory and return `NULL`] */
                 LogError("%s: Unable to connect to the gateway control channel!", __FUNCTION__);
-				nn_close(remote_module->control_socket);
+                nn_close(remote_module->control_socket);
                 free(remote_module);
                 remote_module = NULL;
             } else {
@@ -200,7 +200,7 @@ ProxyGateway_Detach (
 
         /* Codes_SRS_PROXY_GATEWAY_027_061: [`ProxyGateway_Detach` shall attempt to notify the Azure IoT Gateway of the detachment] */
         (void)send_control_reply(remote_module, (uint8_t)REMOTE_MODULE_DETACH);
-		ThreadAPI_Sleep(1000);
+        ThreadAPI_Sleep(1000);
 
         /* Codes_SRS_PROXY_GATEWAY_027_062: [`ProxyGateway_Detach` shall disconnect from the Azure IoT Gateway message channels] */
         disconnect_from_message_channel(remote_module);
@@ -374,7 +374,7 @@ ProxyGateway_HaltWorkerThread (
 
 int
 ProxyGateway_StartWorkerThread (
-	REMOTE_MODULE_HANDLE remote_module
+    REMOTE_MODULE_HANDLE remote_module
 ) {
     int result;
 
@@ -411,7 +411,7 @@ ProxyGateway_StartWorkerThread (
         result = 0;
     }
 
-	return result;
+    return result;
 }
 
 

@@ -28,7 +28,7 @@ include_directories(${GW_INC})
 
 #this builds the native_module_host dynamic library
 add_library(native_module_host SHARED ${native_module_host_sources}  ${native_module_host_headers})
-target_link_libraries(native_module_host parson aziotsharedutil module_host_static proxy_gateway)
+target_link_libraries(native_module_host parson aziotsharedutil module_host_static proxy_gateway )
 
 #this builds the native_module_host static library
 add_library(native_module_host_static STATIC ${native_module_host_static_sources} ${native_module_host_static_headers})
@@ -41,10 +41,10 @@ linkSharedUtil(native_module_host_static)
 add_module_to_solution(native_module_host)
 
 if(${run_unittests})
-	add_subdirectory(tests)
+    add_subdirectory(tests)
 endif()
 
 if(install_modules)
-    install(TARGETS native_module_host LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS native_module_host LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
 endif()
 

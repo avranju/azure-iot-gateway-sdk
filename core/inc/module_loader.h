@@ -85,7 +85,7 @@ typedef struct MODULE_LOADER_API_TAG
     ParseConfigurationFromJson */
     pfModuleLoader_FreeConfiguration FreeConfiguration;
 
-    /** @brief ParseConfigurationFromJson function, responsible for merging
+    /** @brief BuildModuleConfiguration function, responsible for merging
     entrypoint data and data from module configuration into a struct that
     language binding modules expect*/
     pfModuleLoader_BuildModuleConfiguration BuildModuleConfiguration;

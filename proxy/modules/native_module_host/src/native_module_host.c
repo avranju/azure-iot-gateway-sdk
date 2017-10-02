@@ -249,26 +249,26 @@ static MODULE_HANDLE NativeModuleHost_Create(BROKER_HANDLE broker, const void* c
                         {
                             // Have loader and entrypoint now, get module.
                             result = (MODULE_HOST*)malloc(sizeof(MODULE_HOST));
-							if (result == NULL)
-							{
-								LogError("NativeModuleHost_Create could not allocate module.");
-								result = NULL;
-							}
-							else
-							{
-								/*Codes_SRS_NATIVEMODULEHOST_17_018: [ NativeModuleHost_Create shall get the "module.args" object from the configuration JSON. ]*/
-								JSON_Value * module_args = json_object_get_value(module_host_args, OOP_MODULE_ARGS_KEY);
-								char * module_args_string = json_serialize_to_string(module_args);
-								if (module_create(result, broker, &loader_info, module_args_string) != 0)
-								{
-									/*Codes_SRS_NATIVEMODULEHOST_17_026: [ If any step above fails, then NativeModuleHost_Create shall free all resources allocated and return NULL. ]*/
-									LogError("NativeModuleHost_Create could not load module.");
-									free(result);
-									result = NULL;
-								}
-								/*Codes_SRS_NATIVEMODULEHOST_17_024: [ NativeModuleHost_Create shall free all resources used during module loading. ]*/
-								json_free_serialized_string(module_args_string);
-							}
+                            if (result == NULL)
+                            {
+                                LogError("NativeModuleHost_Create could not allocate module.");
+                                result = NULL;
+                            }
+                            else
+                            {
+                                /*Codes_SRS_NATIVEMODULEHOST_17_018: [ NativeModuleHost_Create shall get the "module.args" object from the configuration JSON. ]*/
+                                JSON_Value * module_args = json_object_get_value(module_host_args, OOP_MODULE_ARGS_KEY);
+                                char * module_args_string = json_serialize_to_string(module_args);
+                                if (module_create(result, broker, &loader_info, module_args_string) != 0)
+                                {
+                                    /*Codes_SRS_NATIVEMODULEHOST_17_026: [ If any step above fails, then NativeModuleHost_Create shall free all resources allocated and return NULL. ]*/
+                                    LogError("NativeModuleHost_Create could not load module.");
+                                    free(result);
+                                    result = NULL;
+                                }
+                                /*Codes_SRS_NATIVEMODULEHOST_17_024: [ NativeModuleHost_Create shall free all resources used during module loading. ]*/
+                                json_free_serialized_string(module_args_string);
+                            }
                             loader_info.loader->api->FreeEntrypoint(loader_info.loader, loader_info.entrypoint);
                         }
                     }
